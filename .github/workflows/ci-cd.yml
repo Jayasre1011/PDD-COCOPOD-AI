@@ -161,6 +161,10 @@ jobs:
     name: "Compile Master Report & Deploy"
     needs: [selenium-tests, appium-tests, validation-tests, deployment-status, load-testing]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -187,30 +191,35 @@ jobs:
         with:
           name: selenium-website-tests-artifact
           path: test_artifacts/
+          merge-multiple: true
 
       - name: Download Appium Artifact
         uses: actions/download-artifact@v4
         with:
           name: appium-android-tests-artifact
           path: test_artifacts/
+          merge-multiple: true
 
       - name: Download Validation Artifact
         uses: actions/download-artifact@v4
         with:
           name: validation-tests-artifact
           path: test_artifacts/
+          merge-multiple: true
 
       - name: Download Deployment Status Artifact
         uses: actions/download-artifact@v4
         with:
           name: deployment-status-artifact
           path: test_artifacts/
+          merge-multiple: true
 
       - name: Download Load Testing Artifact
         uses: actions/download-artifact@v4
         with:
           name: load-testing-performance-artifact
           path: test_artifacts/
+          merge-multiple: true
 
       - name: Compile Master JSON Sheets & CSV Report
         run: |

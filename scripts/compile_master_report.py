@@ -14,7 +14,7 @@ def main():
     output_dir = Path("master_artifacts")
     output_dir.mkdir(exist_ok=True)
     
-    suite_files = list(artifacts_dir.glob("*_results.json"))
+    suite_files = list(artifacts_dir.rglob("*_results.json"))
     
     all_test_cases = []
     suite_summaries = []

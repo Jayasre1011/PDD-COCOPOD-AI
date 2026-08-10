@@ -1,11 +1,15 @@
 import re
 from pathlib import Path
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 import joblib
 import numpy as np
 import pandas as pd
 import streamlit as st
 from PIL import Image
+
 
 from src.feature_extraction import (
     extract_hsv_features,

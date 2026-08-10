@@ -1,7 +1,11 @@
 import os
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 import joblib
 import numpy as np
+
 
 from pathlib import Path
 from sklearn.model_selection import train_test_split

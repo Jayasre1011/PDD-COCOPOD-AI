@@ -1,0 +1,94 @@
+name: Deploy to GitHub Pages (Stlite)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Prepare Stlite Site Directory
+        run: |
+          mkdir -p gh-pages-dist
+          cat << 'EOF' > gh-pages-dist/index.html
+          <!I-TYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>CocoaPodAI — Let's Cocoa</title>
+              <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.58.0/build/stlite.css" />
+            </head>
+            <body>
+              <div id="root"></div>
+              <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.58.0/build/stlite.js"></script>
+              <script>
+                stlite.mount({
+                  entrypoint: "Home.py",
+                  files: {
+                    "Home.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/Home.py"
+                    },
+                    "pages/1_🔬_Predict.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/pages/1_%F0%9F%94%AC_Predict.py"
+                    },
+                    "pages/2_📖_Pod_Guide.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/pages/2_%F0%9F%93%96_Pod_Guide.py"
+                    },
+                    "src/theme.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/theme.py"
+                    },
+                    "src/feature_extraction.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/feature_extraction.py"
+                    },
+                    "src/segmentation.py": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/segmentation.py"
+                    },
+                    "models/svm_single.pkl": {
+                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/models/svm_single.pkl"
+                    }
+                  },
+                  requirements: [
+                    "streamlit",
+                    "numpy",
+                    "opencv-python-headless",
+                    "Pillow",
+                    "joblib",
+                    "scikit-learn",
+                    "scikit-image",
+                    "pandas"
+                  ]
+                }, document.getElementById("root"));
+              </script>
+            </body>
+          </html>
+          EOF
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: gh-pages-dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -44,30 +44,43 @@ def load_model():
 model = load_model()
 
 
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+
 def preprocess_rgb(uploaded_file):
     rgb_pil = Image.open(uploaded_file)
 
-    if rgb_pil.mode == "RGBA":
-        rgb = cv2.cvtColor(
-            np.array(rgb_pil),
-            cv2.COLOR_RGBA2BGRA,
-        )
+    if cv2 is not None:
+        if rgb_pil.mode == "RGBA":
+            rgb = cv2.cvtColor(
+                np.array(rgb_pil),
+                cv2.COLOR_RGBA2BGRA,
+            )
+        else:
+            rgb = cv2.cvtColor(
+                np.array(rgb_pil.convert("RGB")),
+                cv2.COLOR_RGB2BGR,
+            )
     else:
-        rgb = cv2.cvtColor(
-            np.array(rgb_pil.convert("RGB")),
-            cv2.COLOR_RGB2BGR,
-        )
+        rgb = np.array(rgb_pil.convert("RGB"))[:, :, ::-1]
 
     return rgb
 
 
 def preprocess_thermal(uploaded_file):
-    thermal = cv2.cvtColor(
-        np.array(Image.open(uploaded_file).convert("RGB")),
-        cv2.COLOR_RGB2BGR,
-    )
+    if cv2 is not None:
+        thermal = cv2.cvtColor(
+            np.array(Image.open(uploaded_file).convert("RGB")),
+            cv2.COLOR_RGB2BGR,
+        )
+    else:
+        thermal = np.array(Image.open(uploaded_file).convert("RGB"))[:, :, ::-1]
 
     return thermal
+
 
 
 def predict_pod(rgb_file, thermal_file):

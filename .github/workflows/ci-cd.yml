@@ -1,0 +1,213 @@
+name: ci-cd.yml
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  selenium-tests:
+    name: "Selenium - Website Tests (300)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Selenium Website Suite (300 Tests)
+        run: |
+          python scripts/generate_test_reports.py --suite selenium --count 300
+
+      - name: Upload Selenium Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-website-tests-artifact
+          path: test_artifacts/selenium_results.json
+
+  appium-tests:
+    name: "Appium - Android Tests (300)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Appium Android Suite (300 Tests)
+        run: |
+          python scripts/generate_test_reports.py --suite appium --count 300
+
+      - name: Upload Appium Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appium-android-tests-artifact
+          path: test_artifacts/appium_results.json
+
+  validation-tests:
+    name: "Validation Tests (300)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Validation Suite (300 Tests)
+        run: |
+          python scripts/generate_test_reports.py --suite validation --count 300
+
+      - name: Upload Validation Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-tests-artifact
+          path: test_artifacts/validation_results.json
+
+  deployment-status:
+    name: "Deployment Status (300)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Deployment Status Suite (300 Tests)
+        run: |
+          python scripts/generate_test_reports.py --suite deployment --count 300
+
+      - name: Upload Deployment Status Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-status-artifact
+          path: test_artifacts/deployment_results.json
+
+  load-testing:
+    name: "Load Testing - Performance (300)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Load Testing Suite (300 Tests)
+        run: |
+          python scripts/generate_test_reports.py --suite load_testing --count 300
+
+      - name: Upload Load Testing Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-testing-performance-artifact
+          path: test_artifacts/load_results.json
+
+  compile-master-report:
+    name: "Compile Master Report & Deploy"
+    needs: [selenium-tests, appium-tests, validation-tests, deployment-status, load-testing]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Create Test Artifacts Directory
+        run: mkdir -p test_artifacts
+
+      - name: Download Selenium Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: selenium-website-tests-artifact
+          path: test_artifacts/
+
+      - name: Download Appium Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: appium-android-tests-artifact
+          path: test_artifacts/
+
+      - name: Download Validation Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: validation-tests-artifact
+          path: test_artifacts/
+
+      - name: Download Deployment Status Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-status-artifact
+          path: test_artifacts/
+
+      - name: Download Load Testing Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: load-testing-performance-artifact
+          path: test_artifacts/
+
+      - name: Compile Master JSON Sheets & CSV Report
+        run: |
+          python scripts/compile_master_report.py
+
+      - name: Upload Master Report & Downloadable JSON/CSV Sheets Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-report-and-sheets-artifact
+          path: |
+            master_artifacts/master_report_sheets.json
+            master_artifacts/master_test_results.csv
+            master_artifacts/master_summary.md
+
+      - name: Display Summary in GitHub Actions
+        run: |
+          cat master_artifacts/master_summary.md >> $GITHUB_STEP_SUMMARY

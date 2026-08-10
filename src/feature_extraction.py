@@ -1,11 +1,27 @@
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
 import numpy as np
+from PIL import Image
 from skimage.feature import local_binary_pattern
 
 try:
     from src.segmentation import segment_rgb_pod, segment_thermal_pod
 except ImportError:
     from segmentation import segment_rgb_pod, segment_thermal_pod
+
+
+def _resize(img, size=(224, 224), is_mask=False):
+    if cv2 is not None:
+        interp = cv2.INTER_NEAREST if is_mask else cv2.INTER_LINEAR
+        return cv2.resize(img, size, interpolation=interp)
+    else:
+        pil_img = Image.fromarray(img)
+        res = pil_img.resize(size, Image.NEAREST if is_mask else Image.BILINEAR)
+        return np.array(res)
+
 
 
 def extract_rgb_features(image):
@@ -17,10 +33,10 @@ def extract_rgb_features(image):
         segmented).
     """
     mask, bgr = segment_rgb_pod(image)
-    bgr = cv2.resize(bgr, (224, 224))
-    mask = cv2.resize(mask, (224, 224), interpolation=cv2.INTER_NEAREST)
+    bgr = _resize(bgr, (224, 224))
+    mask = _resize(mask, (224, 224), is_mask=True)
 
-    b, g, r = cv2.split(bgr)
+    b, g, r = bgr[:, :, 0], bgr[:, :, 1], bgr[:, :, 2]
     m = mask > 0
     if m.sum() == 0:          # segmentation safety fallback
         m = np.ones(mask.shape, dtype=bool)
@@ -34,11 +50,15 @@ def extract_rgb_features(image):
 def extract_hsv_features(image):
     """Mean H/S/V over the segmented pod region only."""
     mask, bgr = segment_rgb_pod(image)
-    bgr = cv2.resize(bgr, (224, 224))
-    mask = cv2.resize(mask, (224, 224), interpolation=cv2.INTER_NEAREST)
+    bgr = _resize(bgr, (224, 224))
+    mask = _resize(mask, (224, 224), is_mask=True)
 
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
+    if cv2 is not None:
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    else:
+        from skimage.color import rgb2hsv
+        hsv = (rgb2hsv(bgr[:, :, ::-1]) * [180, 255, 255]).astype(np.uint8)
+    h, s, v = hsv[:, :, 0], hsv[:, :, 1], hsv[:, :, 2]
     m = mask > 0
     if m.sum() == 0:
         m = np.ones(mask.shape, dtype=bool)
@@ -53,7 +73,11 @@ def extract_thermal_features(image):
     the yellow/orange background so they don't skew mean/std/min/max.
     """
     mask = segment_thermal_pod(image)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if cv2 is not None:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        from skimage.color import rgb2gray
+        gray = (rgb2gray(image[:, :, ::-1]) * 255).astype(np.uint8)
     m = mask > 0
     if m.sum() == 0:
         m = np.ones(mask.shape, dtype=bool)
@@ -71,10 +95,14 @@ def extract_hue_histogram_features(image, bins=10):
     single average hue.
     """
     mask, bgr = segment_rgb_pod(image)
-    bgr = cv2.resize(bgr, (224, 224))
-    mask = cv2.resize(mask, (224, 224), interpolation=cv2.INTER_NEAREST)
+    bgr = _resize(bgr, (224, 224))
+    mask = _resize(mask, (224, 224), is_mask=True)
 
-    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    if cv2 is not None:
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    else:
+        from skimage.color import rgb2hsv
+        hsv = (rgb2hsv(bgr[:, :, ::-1]) * [180, 255, 255]).astype(np.uint8)
     hue = hsv[:, :, 0]
     m = mask > 0
     if m.sum() == 0:
@@ -93,10 +121,14 @@ def extract_lbp_features(image, n_points=8, radius=1, bins=10):
     color alone doesn't separate classes (e.g. Ripe vs Overripe).
     """
     mask, bgr = segment_rgb_pod(image)
-    bgr = cv2.resize(bgr, (224, 224))
-    mask = cv2.resize(mask, (224, 224), interpolation=cv2.INTER_NEAREST)
+    bgr = _resize(bgr, (224, 224))
+    mask = _resize(mask, (224, 224), is_mask=True)
 
-    gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    if cv2 is not None:
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    else:
+        from skimage.color import rgb2gray
+        gray = (rgb2gray(bgr[:, :, ::-1]) * 255).astype(np.uint8)
     lbp = local_binary_pattern(gray, n_points, radius, method="uniform")
     m = mask > 0
     if m.sum() == 0:
@@ -121,3 +153,4 @@ def extract_all_features(rgb_image, thermal_front, thermal_back):
         rgb + hsv + hue_hist + lbp + front + back,
         dtype=np.float32
     )
+

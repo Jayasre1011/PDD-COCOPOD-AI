@@ -27,17 +27,22 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Prepare Stlite Site Directory
+      - name: Prepare Stlite Distribution
         run: |
           mkdir -p gh-pages-dist
+          cp -r Home.py pages src models gh-pages-dist/
+          
           cat << 'EOF' > gh-pages-dist/index.html
-          <!I-TYPE html>
-          <html>
+          <!DOCTYPE html>
+          <html lang="en">
             <head>
               <meta charset="UTF-8" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
               <title>CocoaPodAI — Let's Cocoa</title>
               <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.58.0/build/stlite.css" />
+              <style>
+                body { background-color: #17100B; margin: 0; }
+              </style>
             </head>
             <body>
               <div id="root"></div>
@@ -46,36 +51,19 @@ jobs:
                 stlite.mount({
                   entrypoint: "Home.py",
                   files: {
-                    "Home.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/Home.py"
-                    },
-                    "pages/1_🔬_Predict.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/pages/1_%F0%9F%94%AC_Predict.py"
-                    },
-                    "pages/2_📖_Pod_Guide.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/pages/2_%F0%9F%93%96_Pod_Guide.py"
-                    },
-                    "src/theme.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/theme.py"
-                    },
-                    "src/feature_extraction.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/feature_extraction.py"
-                    },
-                    "src/segmentation.py": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/src/segmentation.py"
-                    },
-                    "models/svm_single.pkl": {
-                      url: "https://raw.githubusercontent.com/shalz-collab/cocopod-AI/main/models/svm_single.pkl"
-                    }
+                    "Home.py": { url: "./Home.py" },
+                    "pages/1_🔬_Predict.py": { url: "./pages/1_%F0%9F%94%AC_Predict.py" },
+                    "pages/2_📖_Pod_Guide.py": { url: "./pages/2_%F0%9F%93%96_Pod_Guide.py" },
+                    "src/theme.py": { url: "./src/theme.py" },
+                    "src/feature_extraction.py": { url: "./src/feature_extraction.py" },
+                    "src/segmentation.py": { url: "./src/segmentation.py" },
+                    "models/svm_single.pkl": { url: "./models/svm_single.pkl" }
                   },
                   requirements: [
-                    "streamlit",
                     "numpy",
-                    "opencv-python-headless",
                     "Pillow",
                     "joblib",
                     "scikit-learn",
-                    "scikit-image",
                     "pandas"
                   ]
                 }, document.getElementById("root"));

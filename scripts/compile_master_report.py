@@ -3,6 +3,7 @@ compile_master_report.py
 Compiles all test suite reports into a master JSON sheet artifact, CSV spreadsheet, and summary markdown.
 """
 
+import os
 import json
 import csv
 import time
@@ -42,10 +43,11 @@ def main():
             print(f"Warning: Failed to read {s_file}: {e}")
             
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
+    repo_name = os.environ.get("GITHUB_REPOSITORY", "Jayasre1011/-CocoaPodAI")
     
     master_report = {
         "project_name": "CocoaPodAI — Let's Cocoa",
-        "repository": "shalz-collab/cocopod-AI",
+        "repository": repo_name,
         "workflow": "ci-cd.yml",
         "status": "SUCCESS" if total_failed == 0 else "FAILURE",
         "overall_summary": {

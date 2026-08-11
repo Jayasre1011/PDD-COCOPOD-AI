@@ -1,0 +1,12 @@
+{
+  "name": "cocoapodai-selenium-tests",
+  "version": "1.0.0",
+  "description": "Selenium WebDriver E2E Automated Test Suite for CocoaPodAI Web Application (300 Tests)",
+  "main": "runner.js",
+  "scripts": {
+    "test": "node runner.js"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.20.0"
+  }
+}

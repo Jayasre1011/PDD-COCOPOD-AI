@@ -35,15 +35,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Selenium Website Suite (300 Tests)
+      - name: Run Selenium Website E2E Suite (300 Tests across 11 Categories)
         run: |
-          python scripts/generate_test_reports.py --suite selenium --count 300
+          python tests/selenium/selenium_runner.py
 
-      - name: Upload Selenium Artifact
+      - name: Upload Selenium Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: selenium-website-tests-artifact
-          path: test_artifacts/selenium_results.json
+          path: |
+            test_artifacts/selenium_results.json
+            test_artifacts/selenium_e2e_300_analysis.csv
 
   appium-tests:
     name: "Appium - Android Tests (300)"
@@ -63,15 +65,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Appium Android Suite (300 Tests)
+      - name: Run Appium Android E2E Suite (300 Tests across 11 Categories)
         run: |
-          python scripts/generate_test_reports.py --suite appium --count 300
+          python tests/appium/appium_runner.py
 
-      - name: Upload Appium Artifact
+      - name: Upload Appium Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: appium-android-tests-artifact
-          path: test_artifacts/appium_results.json
+          path: |
+            test_artifacts/appium_results.json
+            test_artifacts/appium_e2e_300_analysis.csv
 
   validation-tests:
     name: "Validation Tests (300)"
@@ -236,6 +240,8 @@ jobs:
           path: |
             master_artifacts/master_report_sheets.json
             master_artifacts/master_test_results.csv
+            master_artifacts/selenium_e2e_300_analysis.csv
+            master_artifacts/appium_e2e_300_analysis.csv
             master_artifacts/master_summary.md
 
       - name: Display Summary in GitHub Actions

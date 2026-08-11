@@ -1,0 +1,14 @@
+{
+  "suite_name": "selenium",
+  "suite_title": "Selenium - Website E2E Tests (300)",
+  "framework": "Selenium WebDriver (Python / Node.js)",
+  "target": "CocoaPodAI Web Application",
+  "status": "SUCCESS",
+  "total_tests": 300,
+  "passed": 300,
+  "failed": 0,
+  "skipped": 0,
+  "pass_rate": "100%",
+  "execution_timestamp": "2026-08-11 13:58:00 UTC",
+  "categories_covered": 11
+}

@@ -72,6 +72,7 @@ def main():
           "cv2.py": { url: "./cv2.py" },
           "pages/1_🔬_Predict.py": { url: "./pages/1_%F0%9F%94%AC_Predict.py" },
           "pages/2_📖_Pod_Guide.py": { url: "./pages/2_%F0%9F%93%96_Pod_Guide.py" },
+          "pages/3_📊_Test_Reports.py": { url: "./pages/3_%F0%9F%93%8A_Test_Reports.py" },
           "src/theme.py": { url: "./src/theme.py" },
           "src/feature_extraction.py": { url: "./src/feature_extraction.py" },
           "src/segmentation.py": { url: "./src/segmentation.py" },

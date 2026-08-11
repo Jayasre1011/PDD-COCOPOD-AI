@@ -29,6 +29,7 @@ jobs:
           python -m py_compile Home.py
           python -m py_compile pages/1_🔬_Predict.py
           python -m py_compile pages/2_📖_Pod_Guide.py
+          python -m py_compile pages/3_📊_Test_Reports.py
           python -m py_compile src/theme.py
           python -m py_compile src/feature_extraction.py
           python -m py_compile src/segmentation.py

@@ -1,7 +1,7 @@
 # 🍫 CocoaPodAI — Multimodal Cocoa Pod Classification System
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/)
-[![GitHub Actions CI](https://github.com/Jayasre1011/-CocoaPodAI/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Jayasre1011/-CocoaPodAI/actions)
+[![GitHub Actions CI](https://github.com/Jayasre1011/PDD-COCOPOD-AI/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Jayasre1011/PDD-COCOPOD-AI/actions)
 [![Firebase Hosting](https://img.shields.io/badge/Firebase-Hosting-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
@@ -27,7 +27,7 @@ All 5 test suites run concurrently and feed into **Compile Master Report & Deplo
 This repository is configured for automatic deployment to **GitHub Pages** via `.github/workflows/ci-cd.yml` powered by **Stlite (Streamlit WebAssembly)**.
 1. Enable GitHub Pages in your repository settings: **Settings** -> **Pages** -> **Source: GitHub Actions**.
 2. Push your changes to `main` or trigger the workflow manually.
-3. Your app will be live at `https://jayasre1011.github.io/-CocoaPodAI/`!
+3. Your app will be live at `https://jayasre1011.github.io/PDD-COCOPOD-AI/`!
 
 ---
 
@@ -68,9 +68,9 @@ To enable automatic deployment on every `git push`:
 
 ## 🚀 How to Deploy on Streamlit Community Cloud
 
-1. Push your repository to GitHub: `https://github.com/Jayasre1011/-CocoaPodAI`
+1. Push your repository to GitHub: `https://github.com/Jayasre1011/PDD-COCOPOD-AI`
 2. Go to [share.streamlit.io](https://share.streamlit.io/) and log in with GitHub.
-3. Click **"New app"**, select `Jayasre1011/-CocoaPodAI`, set main file path to `Home.py`, and click **"Deploy!"**.
+3. Click **"New app"**, select `Jayasre1011/PDD-COCOPOD-AI`, set main file path to `Home.py`, and click **"Deploy!"**.
 
 ---
 

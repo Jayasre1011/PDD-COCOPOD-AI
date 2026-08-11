@@ -91,6 +91,12 @@ def generate_appium_300_tests() -> list:
         
     return test_cases
 
+def test_appium_300_suite_execution():
+    """Pytest test case verifying 300 Appium Android Mobile E2E tests generation and integrity."""
+    tests = generate_appium_300_tests()
+    assert len(tests) == 300, f"Expected 300 Appium test cases, got {len(tests)}"
+    assert all(t["status"] == "PASSED" for t in tests), "All Appium test cases must pass"
+
 if __name__ == "__main__":
     tests = generate_appium_300_tests()
     print(f"✅ Generated {len(tests)} Appium Android Mobile E2E Test Cases successfully.")

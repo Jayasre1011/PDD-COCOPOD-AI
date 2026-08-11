@@ -139,7 +139,7 @@ jobs:
 
       - name: Run Pytest Unit & Integration Test Suite
         run: |
-          pytest tests/test_*.py -v
+          PYTHONPATH=. pytest tests/ -v
 
       - name: Run Validation Suite (300 Tests)
         run: |

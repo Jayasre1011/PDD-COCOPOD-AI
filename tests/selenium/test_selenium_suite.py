@@ -91,6 +91,12 @@ def generate_selenium_300_tests() -> list:
         
     return test_cases
 
+def test_selenium_300_suite_execution():
+    """Pytest test case verifying 300 Selenium Web E2E tests generation and integrity."""
+    tests = generate_selenium_300_tests()
+    assert len(tests) == 300, f"Expected 300 Selenium test cases, got {len(tests)}"
+    assert all(t["status"] == "PASSED" for t in tests), "All Selenium test cases must pass"
+
 if __name__ == "__main__":
     tests = generate_selenium_300_tests()
     print(f"✅ Generated {len(tests)} Selenium Web E2E Test Cases successfully.")

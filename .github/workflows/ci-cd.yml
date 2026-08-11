@@ -17,6 +17,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  publish-data-artifacts:
+    name: "Publish CocoaPodAI Excel & JSON Data Artifacts"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Test Runners & Compile Master Excel & JSON Sheets
+        run: |
+          python tests/selenium/selenium_runner.py
+          python tests/appium/appium_runner.py
+          python scripts/generate_test_reports.py --suite validation --count 300
+          python scripts/generate_test_reports.py --suite deployment --count 300
+          python scripts/generate_test_reports.py --suite load_testing --count 300
+          python scripts/compile_master_report.py
+
+      - name: Upload Excel & JSON Data Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cocoapodai-excel-and-json-data-artifacts
+          path: |
+            master_artifacts/master_report_sheets.json
+            master_artifacts/master_test_results.csv
+            master_artifacts/master_test_results.xlsx
+            master_artifacts/selenium_e2e_300_analysis.csv
+            master_artifacts/selenium_e2e_300_analysis.xlsx
+            master_artifacts/appium_e2e_300_analysis.csv
+            master_artifacts/appium_e2e_300_analysis.xlsx
+            master_artifacts/master_summary.md
+            test_artifacts/
+
   selenium-tests:
     name: "Selenium - Website Tests (300)"
     runs-on: ubuntu-latest
@@ -167,7 +209,7 @@ jobs:
 
   compile-master-report:
     name: "Compile Master Report & Deploy"
-    needs: [selenium-tests, appium-tests, validation-tests, deployment-status, load-testing]
+    needs: [publish-data-artifacts, selenium-tests, appium-tests, validation-tests, deployment-status, load-testing]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -229,19 +271,22 @@ jobs:
           path: test_artifacts/
           merge-multiple: true
 
-      - name: Compile Master JSON Sheets & CSV Report
+      - name: Compile Master JSON Sheets & CSV / XLSX Reports
         run: |
           python scripts/compile_master_report.py
 
-      - name: Upload Master Report & Downloadable JSON/CSV Sheets Artifact
+      - name: Upload Master Report & Downloadable JSON/CSV/XLSX Sheets Artifact
         uses: actions/upload-artifact@v4
         with:
           name: master-report-and-sheets-artifact
           path: |
             master_artifacts/master_report_sheets.json
             master_artifacts/master_test_results.csv
+            master_artifacts/master_test_results.xlsx
             master_artifacts/selenium_e2e_300_analysis.csv
+            master_artifacts/selenium_e2e_300_analysis.xlsx
             master_artifacts/appium_e2e_300_analysis.csv
+            master_artifacts/appium_e2e_300_analysis.xlsx
             master_artifacts/master_summary.md
 
       - name: Display Summary in GitHub Actions
@@ -271,4 +316,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

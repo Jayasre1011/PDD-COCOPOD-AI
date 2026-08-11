@@ -1,6 +1,6 @@
 """
 compile_master_report.py
-Compiles all test suite reports into master JSON sheet artifacts, CSV spreadsheets, and summary markdown across 11 core software testing categories.
+Compiles all test suite reports into master JSON sheet artifacts, CSV spreadsheets, real Excel .xlsx files, and summary markdown across 11 core software testing categories.
 """
 
 import os
@@ -8,6 +8,7 @@ import json
 import csv
 import time
 from pathlib import Path
+import pandas as pd
 
 TEST_CATEGORIES = [
     "1. Functional Testing",
@@ -57,24 +58,32 @@ def main():
             test_cases = data.get("test_cases", [])
             all_test_cases.extend(test_cases)
             
-            # Export individual CSV for selenium and appium if applicable
+            # Export individual CSV & XLSX for selenium and appium if applicable
             if suite_name in ["selenium", "appium"]:
+                df_suite = pd.DataFrame([
+                    {
+                        "Test ID": tc.get("test_id"),
+                        "Test Name": tc.get("name") or tc.get("test_name"),
+                        "Category": tc.get("category"),
+                        "Status": tc.get("status"),
+                        "Duration (ms)": tc.get("execution_time_ms"),
+                        "Timestamp": tc.get("timestamp"),
+                        "Assertion": tc.get("assertion"),
+                        "Result": tc.get("result")
+                    }
+                    for tc in test_cases
+                ])
+                
                 suite_csv_path = output_dir / f"{suite_name}_e2e_300_analysis.csv"
-                with open(suite_csv_path, "w", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow(["Test ID", "Test Name", "Category", "Status", "Duration (ms)", "Timestamp", "Assertion", "Result"])
-                    for tc in test_cases:
-                        writer.writerow([
-                            tc.get("test_id"),
-                            tc.get("name") or tc.get("test_name"),
-                            tc.get("category"),
-                            tc.get("status"),
-                            tc.get("execution_time_ms"),
-                            tc.get("timestamp"),
-                            tc.get("assertion"),
-                            tc.get("result")
-                        ])
-                print(f"📊 Saved {suite_name.upper()} E2E CSV -> {suite_csv_path}")
+                df_suite.to_csv(suite_csv_path, index=False, encoding="utf-8")
+                
+                try:
+                    suite_xlsx_path = output_dir / f"{suite_name}_e2e_300_analysis.xlsx"
+                    with pd.ExcelWriter(suite_xlsx_path, engine="openpyxl") as writer:
+                        df_suite.to_excel(writer, sheet_name=f"{suite_name.title()} E2E 300", index=False)
+                    print(f"📊 Saved {suite_name.upper()} XLSX Excel -> {suite_xlsx_path}")
+                except Exception as ex:
+                    print(f"Note: Excel XLSX writer warning: {ex}")
 
         except Exception as e:
             print(f"Warning: Failed to read {s_file}: {e}")
@@ -107,23 +116,34 @@ def main():
     master_json_path.write_text(json.dumps(master_report, indent=2), encoding="utf-8")
     print(f"📄 Saved downloadable sheets JSON -> {master_json_path}")
     
-    # 2. Save master CSV spreadsheet artifact
+    # 2. Save master CSV & XLSX spreadsheet artifacts
+    df_all = pd.DataFrame([
+        {
+            "Test ID": tc.get("test_id"),
+            "Test Name": tc.get("name") or tc.get("test_name"),
+            "Category": tc.get("category"),
+            "Status": tc.get("status"),
+            "Duration (ms)": tc.get("execution_time_ms"),
+            "Timestamp": tc.get("timestamp"),
+            "Assertion": tc.get("assertion"),
+            "Result": tc.get("result")
+        }
+        for tc in all_test_cases
+    ])
+    
     master_csv_path = output_dir / "master_test_results.csv"
-    with open(master_csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["Test ID", "Test Name", "Category", "Status", "Duration (ms)", "Timestamp", "Assertion", "Result"])
-        for tc in all_test_cases:
-            writer.writerow([
-                tc.get("test_id"),
-                tc.get("name") or tc.get("test_name"),
-                tc.get("category"),
-                tc.get("status"),
-                tc.get("execution_time_ms"),
-                tc.get("timestamp"),
-                tc.get("assertion"),
-                tc.get("result")
-            ])
+    df_all.to_csv(master_csv_path, index=False, encoding="utf-8")
     print(f"📊 Saved downloadable CSV sheet -> {master_csv_path}")
+    
+    try:
+        master_xlsx_path = output_dir / "master_test_results.xlsx"
+        with pd.ExcelWriter(master_xlsx_path, engine="openpyxl") as writer:
+            df_all.to_excel(writer, sheet_name="Master 1500 Tests", index=False)
+            df_summary = pd.DataFrame(suite_summaries)
+            df_summary.to_excel(writer, sheet_name="Suite Summary", index=False)
+        print(f"📊 Saved master XLSX Excel -> {master_xlsx_path}")
+    except Exception as ex:
+        print(f"Note: Excel XLSX writer warning: {ex}")
     
     # 3. Save Summary Markdown
     md_content = f"""# 🚀 CocoaPodAI Master Test Report & Deployment Summary
@@ -157,7 +177,7 @@ def main():
 
     md_content += """
 ---
-*Downloadable Artifacts generated: `master_report_sheets.json`, `master_test_results.csv`, `selenium_e2e_300_analysis.csv`, `appium_e2e_300_analysis.csv`, `selenium_results.json`, `appium_results.json`, `validation_results.json`, `deployment_results.json`, `load_results.json`.*
+*Downloadable Artifacts generated: `master_report_sheets.json`, `master_test_results.xlsx`, `master_test_results.csv`, `selenium_e2e_300_analysis.xlsx`, `selenium_e2e_300_analysis.csv`, `appium_e2e_300_analysis.xlsx`, `appium_e2e_300_analysis.csv`, `selenium_results.json`, `appium_results.json`, `validation_results.json`, `deployment_results.json`, `load_results.json`.*
 """
     
     summary_path = output_dir / "master_summary.md"
